@@ -45,6 +45,17 @@ VOC_LABELS = {
     'tvmonitor': (20, 'Indoor'),
 }
 
+SNACKS_LABELS = {
+    'none'          : (0,'Background'),
+    'alfort'        : (1, 'Snack'),
+    'almond'        : (2, 'Snack'),
+    'dars'          : (3, 'Snack'),
+    'donbei'        : (4, 'Snack'),
+    'kinokonoyama'  : (5, 'Snack'),
+    'koala'         : (6, 'Snack'),
+    'pynomi'        : (7, 'Snack'),
+}
+
 
 def get_split(split_name, dataset_dir, file_pattern, reader,
               split_to_sizes, items_to_descriptions, num_classes):

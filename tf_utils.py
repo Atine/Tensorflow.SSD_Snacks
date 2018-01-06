@@ -62,22 +62,22 @@ def print_configuration(flags, ssd_params, data_sources, save_dir=None):
     """Print the training configuration.
     """
     def print_config(stream=None):
-        print('\n# =========================================================================== #', file=stream)
-        print('# Training | Evaluation flags:', file=stream)
-        print('# =========================================================================== #', file=stream)
+        print('\n# =========================================================================== #')
+        print('# Training | Evaluation flags:')
+        print('# =========================================================================== #')
         pprint(flags, stream=stream)
 
-        print('\n# =========================================================================== #', file=stream)
-        print('# SSD net parameters:', file=stream)
-        print('# =========================================================================== #', file=stream)
+        print('\n# =========================================================================== #')
+        print('# SSD net parameters:')
+        print('# =========================================================================== #')
         pprint(dict(ssd_params._asdict()), stream=stream)
 
-        print('\n# =========================================================================== #', file=stream)
-        print('# Training | Evaluation dataset files:', file=stream)
-        print('# =========================================================================== #', file=stream)
+        print('\n# =========================================================================== #')
+        print('# Training | Evaluation dataset files:')
+        print('# =========================================================================== #')
         data_files = parallel_reader.get_data_files(data_sources)
         pprint(sorted(data_files), stream=stream)
-        print('', file=stream)
+        print('')
 
     print_config(None)
     # Save to a text file as well.
