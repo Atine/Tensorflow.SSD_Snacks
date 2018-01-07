@@ -27,23 +27,23 @@ ITEMS_TO_DESCRIPTIONS = {
     'object/label': 'A list of labels, one per each object.',
 }
 # (Images, Objects) statistics on every class.
-TRAIN_STATISTICS = {
-    'none': (0, 0),
-    'alfort': (670, 865),
-    'almond': (552, 711),
-    'dars': (765, 1119),
-    'donbei': (508, 850),
-    'konokonoyama': (706, 1259),
-    'koala': (421, 593),
-    'pynomi': (1161, 2017),
-    'total': (11540, 27450),
-}
+#TRAIN_STATISTICS = {
+#    'none': (0, 0),
+#    'alfort': (670, 865),
+#    'almond': (552, 711),
+#    'dars': (765, 1119),
+#    'donbei': (508, 850),
+#    'konokonoyama': (706, 1259),
+#    'koala': (421, 593),
+#    'pynomi': (1161, 2017),
+#    'total': (11540, 701),
+#}
 SPLITS_TO_SIZES = {
-    'train': 17125,
+    'train': 701,
 }
-SPLITS_TO_STATISTICS = {
-    'train': TRAIN_STATISTICS,
-}
+#SPLITS_TO_STATISTICS = {
+#    'train': TRAIN_STATISTICS,
+#}
 NUM_CLASSES = 8
 
 
