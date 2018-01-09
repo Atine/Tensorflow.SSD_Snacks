@@ -23,4 +23,5 @@ ssd-tensorflow.sublime-workspace
 ssd-tensorflow.sublime-project
 
 *.pyc
+*.swp
 checkpoints/zips/
