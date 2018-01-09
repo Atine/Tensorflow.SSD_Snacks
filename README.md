@@ -101,6 +101,7 @@ python train_ssd_network.py \
     --optimizer=adam \
     --learning_rate=0.001 \
     --batch_size=32
+    --num_classes=8
 ```
 Note that in addition to the training script flags, one may also want to experiment with data augmentation parameters (random cropping, resolution, ...) in `ssd_vgg_preprocessing.py` or/and network parameters (feature layers, anchors boxes, ...) in `ssd_vgg_300/512.py`
 
@@ -117,6 +118,7 @@ python eval_ssd_network.py \
     --wait_for_checkpoints=True \
     --batch_size=1 \
     --max_num_batches=500
+    --num_classes=8
 ```
 
 ### Fine-tuning a network trained on ImageNet
@@ -144,7 +146,7 @@ python train_ssd_network.py \
     --learning_rate_decay_factor=0.94 \
     --batch_size=32 \
     --num_classe=8
-    ```
+```
 Hence, in the former command, the training script randomly initializes the weights belonging to the `checkpoint_exclude_scopes` and load from the checkpoint file `vgg_16.ckpt` the remaining part of the network. Note that we also specify with the `trainable_scopes` parameter to first only train the new SSD components and left the rest of VGG network unchanged. Once the network has converged to a good first result (~0.5 mAP for instance), you can fine-tuned the complete network as following:
 ```bash
 DATASET_DIR=./tfrecords
@@ -164,7 +166,8 @@ python train_ssd_network.py \
     --optimizer=adam \
     --learning_rate=0.00001 \
     --learning_rate_decay_factor=0.94 \
-    --batch_size=32
+    --batch_size=32 \
+    --num_classes=8
 ```
 
 A number of pre-trained weights of popular deep architectures can be found on [TF-Slim models page](https://github.com/tensorflow/models/tree/master/slim).
