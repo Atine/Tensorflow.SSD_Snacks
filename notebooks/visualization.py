@@ -18,6 +18,7 @@ import random
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.cm as mpcm
+from datasets.pascalvoc_common import VOC_LABELS, SNACKS_LABELS
 
 
 # =========================================================================== #
@@ -83,9 +84,21 @@ def bboxes_draw_on_img(img, classes, scores, bboxes, colors, thickness=2):
 # =========================================================================== #
 # Matplotlib show...
 # =========================================================================== #
-def plt_bboxes(img, classes, scores, bboxes, figsize=(10,10), linewidth=1.5):
+def plt_bboxes(img, classes, scores, bboxes, dataset_name, figsize=(10,10), linewidth=1.5):
     """Visualize bounding boxes. Largely inspired by SSD-MXNET!
     """
+
+    #print classes.shape
+    #print classes
+    
+    assert dataset_name in ['pascalvoc2007', 'pascalvoc2012', 'snacks']
+    if dataset_name in ['pascalvoc2007', 'pascalvoc2012']:
+      LABELS = VOC_LABELS
+    if dataset_name == 'snacks':
+      LABELS = SNACKS_LABELS
+ 
+   
+
     fig = plt.figure(figsize=figsize)
     plt.imshow(img)
     height = img.shape[0]
@@ -106,9 +119,23 @@ def plt_bboxes(img, classes, scores, bboxes, figsize=(10,10), linewidth=1.5):
                                  edgecolor=colors[cls_id],
                                  linewidth=linewidth)
             plt.gca().add_patch(rect)
-            class_name = str(cls_id)
+
+            for name, (number, type) in LABELS.iteritems():
+              if number == cls_id:
+                class_name = name
+           
+            #class_name = str(LABELS[cls_id])
             plt.gca().text(xmin, ymin - 2,
                            '{:s} | {:.3f}'.format(class_name, score),
                            bbox=dict(facecolor=colors[cls_id], alpha=0.5),
                            fontsize=12, color='white')
-    plt.show()
+        print xmin, xmax, ymin, ymax, class_name
+    
+    plt.show(block=True)
+    #_ = raw_input("Press [enter] to continue.")
+
+
+
+   
+
+

@@ -12,6 +12,8 @@ slim = tf.contrib.slim
 
 # plot imports
 #get_ipython().magic(u'matplotlib inline')
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
@@ -32,26 +34,6 @@ config = tf.ConfigProto(log_device_placement=False, gpu_options=gpu_options)
 isess = tf.InteractiveSession(config=config)
 
 
-### Main image processing routine.
-def process_image(img, select_threshold=0.5, nms_threshold=.45, net_shape=(300, 300), num_classes=21):
-    # Run SSD network.
-    rimg, rpredictions, rlocalisations, rbbox_img = isess.run([image_4d, predictions, localisations, bbox_img], 
-        feed_dict={img_input: img})
-    
-    # Get classes and bboxes from the net outputs.
-    rclasses, rscores, rbboxes = np_methods.ssd_bboxes_select(
-        rpredictions, rlocalisations, ssd_anchors,
-        select_threshold=select_threshold, img_shape=net_shape, num_classes=num_classes, decode=True)
-    
-    rbboxes = np_methods.bboxes_clip(rbbox_img, rbboxes)
-    rclasses, rscores, rbboxes = np_methods.bboxes_sort(rclasses, rscores, rbboxes, top_k=400)
-    rclasses, rscores, rbboxes = np_methods.bboxes_nms(rclasses, rscores, rbboxes, nms_threshold=nms_threshold)
-    # Resize bboxes to original image shape. Note: useless for Resize.WARP!
-    rbboxes = np_methods.bboxes_resize(rbbox_img, rbboxes)
-    return rclasses, rscores, rbboxes
-
-
-
 # ## SSD 300 Model
 # 
 # The SSD 300 network takes 300x300 image inputs. In order to feed any image, the latter is resize to this input shape 
@@ -60,17 +42,19 @@ def process_image(img, select_threshold=0.5, nms_threshold=.45, net_shape=(300, 
 # SSD anchors correspond to the default bounding boxes encoded in the network. The SSD net output provides offset 
 # on the coordinates and dimensions of these anchors.
 
-def eval_ssd(dataset_name, img_path, checkpoint_path=None):
+def eval_ssd(dataset_name, image_path=None, ckpt_filename=None):
 
+  assert dataset_name in ['pascalvoc2007', 'pascalvoc2012', 'snacks']
   if dataset_name in ['pascalvoc2007', 'pascalvoc2012']:
     num_classes=21
-  elif dataset_name == 'snacks':
+  if dataset_name == 'snacks':
     num_classes=8
-  else:
-    AssertionError
 
-  if checkpoint_path == None:
+  if ckpt_filename == None:
     print ("Checkpoint Path not speficied")
+    sys.exit(1)
+  if image_path == None:
+    print ("Image Path not speficied")
     sys.exit(1)
 
 
@@ -82,26 +66,25 @@ def eval_ssd(dataset_name, img_path, checkpoint_path=None):
   image_pre, labels_pre, bboxes_pre, bbox_img = ssd_vgg_preprocessing.preprocess_for_eval(
       img_input, None, None, net_shape, data_format, resize=ssd_vgg_preprocessing.Resize.WARP_RESIZE)
   image_4d = tf.expand_dims(image_pre, 0)
+  # Test on some demo image and visualize output.
+  path = '../demo/'
+  image_names = sorted(os.listdir(path))
+  img = mpimg.imread(path + image_names[-5])
 
-  # Define the SSD model.
+
+  ## Define the SSD model.
   reuse = True if 'ssd_net' in locals() else None
   ssd_net = ssd_vgg_300.SSDNet()
   with slim.arg_scope(ssd_net.arg_scope(data_format=data_format)):
       predictions, localisations, _, _ = ssd_net.net(image_4d, is_training=False, reuse=reuse)
 
-  # Restore SSD model.
-  ckpt_filename = '../checkpoints/ssd_300_vgg.ckpt'
-  # ckpt_filename = '../checkpoints/VGG_VOC0712_SSD_300x300_ft_iter_120000.ckpt'
+  ## Restore SSD model.
   isess.run(tf.global_variables_initializer())
   saver = tf.train.Saver()
   saver.restore(isess, ckpt_filename)
-
-  # SSD default anchor boxes.
   ssd_anchors = ssd_net.anchors(net_shape)
 
 
-  # ## Post-processing pipeline
-  # 
   # The SSD outputs need to be post-processed to provide proper detections. Namely, we follow these common steps:
   # 
   # * Select boxes above a classification threshold;
@@ -110,17 +93,30 @@ def eval_ssd(dataset_name, img_path, checkpoint_path=None):
   # * If necessary, resize bounding boxes to original image shape.
 
 
-  # Test on some demo image and visualize output.
-  path = '../demo/'
-  image_names = sorted(os.listdir(path))
+  # Run SSD network.
+  rimg, rpredictions, rlocalisations, rbbox_img = isess.run([image_4d, predictions, localisations, bbox_img], 
+      feed_dict={img_input: img})
+  
+  # Get classes and bboxes from the net outputs.
+  rclasses, rscores, rbboxes = np_methods.ssd_bboxes_select(rpredictions, rlocalisations, ssd_anchors,
+      select_threshold=0.5, img_shape=net_shape, num_classes=num_classes, decode=True)
+  
+  rbboxes = np_methods.bboxes_clip(rbbox_img, rbboxes)
+  rclasses, rscores, rbboxes = np_methods.bboxes_sort(rclasses, rscores, rbboxes, top_k=400)
+  rclasses, rscores, rbboxes = np_methods.bboxes_nms(rclasses, rscores, rbboxes, nms_threshold=0.45)
+  # Resize bboxes to original image shape. Note: useless for Resize.WARP!
+  rbboxes = np_methods.bboxes_resize(rbbox_img, rbboxes)
 
-  img = mpimg.imread(path + image_names[-5])
-  rclasses, rscores, rbboxes =  process_image(img=img, num_classes=num_classes)
-
-  # visualization.bboxes_draw_on_img(img, rclasses, rscores, rbboxes, visualization.colors_plasma)
+  ### visualization.bboxes_draw_on_img(img, rclasses, rscores, rbboxes, visualization.colors_plasma)
   visualization.plt_bboxes(img, rclasses, rscores, rbboxes)
+  visualization.save_as_JSON(img, rclasses, rscoes, rbboxes)
 
 
 if __name__ == '__main__':
-  eval_ssd(dataset_name='tmp', checkpoint_path='', image_path='../demo')
+
+  #ckpt_filename = '../checkpoints/ssd_300_vgg.ckpt'
+  ckpt_filename = '../checkpoints/VGG_VOC0712_SSD_300x300_ft_iter_120000.ckpt'
+  
+  #ckpt_filename = 'snacksssss'
+  eval_ssd(dataset_name='pascalvoc2007', image_path='../demo', ckpt_filename=ckpt_filename)
 
