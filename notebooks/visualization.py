@@ -120,7 +120,7 @@ def plt_bboxes(img, classes, scores, bboxes, dataset_name, figsize=(10,10), line
                                  linewidth=linewidth)
             plt.gca().add_patch(rect)
 
-            for name, (number, type) in LABELS.iteritems():
+            for name, (number, _) in LABELS.iteritems():
               if number == cls_id:
                 class_name = name
            
@@ -136,6 +136,42 @@ def plt_bboxes(img, classes, scores, bboxes, dataset_name, figsize=(10,10), line
 
 
 
-   
+def save_as_JSON(img, classes, scores, bboxes, dataset_name):
+    import json
+  
+    assert dataset_name in ['pascalvoc2007', 'pascalvoc2012', 'snacks']
+    if dataset_name in ['pascalvoc2007', 'pascalvoc2012']:
+      LABELS = VOC_LABELS
+    if dataset_name == 'snacks':
+      LABELS = SNACKS_LABELS
+    
+    json_list = []
+
+
+    height = img.shape[0]
+    width = img.shape[1]
+    for i in range(classes.shape[0]):
+      cls_id = int(classes[i])
+      if cls_id > 0:
+        # append the values to a list
+        scores_list.append(scores[i])
+        y_min = int(bboxes[i, 0] * height))
+        x_min = int(bboxes[i, 1] * width))
+        y_max = int(bboxes[i, 2] * height))
+        x_max = int(bboxes[i, 3] * width))
+
+        # get the corresponding class name
+        for name, (number, type) in LABELS.iteritems():
+          if number == cls_id:
+            class_name = name
+
+
+        json_list.append([x_min, x_max, y_min, y_max, class_name])
+
+        
+    with open('prediction.json', 'w') as outfile:
+      json.dump(json_list, outfile)
+
+    
 
 
