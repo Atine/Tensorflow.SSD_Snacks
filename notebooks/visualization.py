@@ -120,9 +120,15 @@ def plt_bboxes(img, classes, scores, bboxes, dataset_name, figsize=(10,10), line
                                  linewidth=linewidth)
             plt.gca().add_patch(rect)
 
-            for name, (number, _) in LABELS.iteritems():
-              if number == cls_id:
-                class_name = name
+            if sys.version_info[0] < 3: 
+              for name, (number, _) in LABELS.iteritems():
+                if number == cls_id:
+                  class_name = name
+            elif sys.version_info[0] == 3:
+              for name, (number, _) in LABELS.items():
+                if number == cls_id:
+                  class_name = name
+
            
             #class_name = str(LABELS[cls_id])
             plt.gca().text(xmin, ymin - 2,
@@ -160,9 +166,15 @@ def save_as_JSON(img, classes, scores, bboxes, dataset_name):
         xmax = int(bboxes[i, 3] * width)
 
         # get the corresponding class name
-        for name, (number, type) in LABELS.iteritems():
-          if number == cls_id:
-            class_name = name
+        if sys.version_info[0] < 3:
+          for name, (number, type) in LABELS.iteritems():
+            if number == cls_id:
+              class_name = name
+        elif sys.version_info[0] == 3:
+          for name, (number, _) in LABELS.items():
+            if number == cls_id:
+              class_name = name
+
 
         json_list.append([xmin, xmax, ymin, ymax, class_name])
         print (xmin, xmax, ymin, ymax, class_name)
