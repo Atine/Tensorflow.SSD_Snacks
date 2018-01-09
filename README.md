@@ -91,7 +91,7 @@ CHECKPOINT_PATH=./checkpoints/ssd_300_vgg.ckpt
 python train_ssd_network.py \
     --train_dir=${TRAIN_DIR} \
     --dataset_dir=${DATASET_DIR} \
-    --dataset_name=pascalvoc_2012 \
+    --dataset_name=snacks \
     --dataset_split_name=train \
     --model_name=ssd_300_vgg \
     --checkpoint_path=${CHECKPOINT_PATH} \
@@ -110,8 +110,8 @@ EVAL_DIR=${TRAIN_DIR}/eval
 python eval_ssd_network.py \
     --eval_dir=${EVAL_DIR} \
     --dataset_dir=${DATASET_DIR} \
-    --dataset_name=pascalvoc_2007 \
-    --dataset_split_name=test \
+    --dataset_name=snacks \
+    --dataset_split_name=train \
     --model_name=ssd_300_vgg \
     --checkpoint_path=${TRAIN_DIR} \
     --wait_for_checkpoints=True \
@@ -129,7 +129,7 @@ CHECKPOINT_PATH=./checkpoints/vgg_16.ckpt
 python train_ssd_network.py \
     --train_dir=${TRAIN_DIR} \
     --dataset_dir=${DATASET_DIR} \
-    --dataset_name=pascalvoc_2007 \
+    --dataset_name=snacks \
     --dataset_split_name=train \
     --model_name=ssd_300_vgg \
     --checkpoint_path=${CHECKPOINT_PATH} \
@@ -152,7 +152,7 @@ CHECKPOINT_PATH=./log/model.ckpt-N
 python train_ssd_network.py \
     --train_dir=${TRAIN_DIR} \
     --dataset_dir=${DATASET_DIR} \
-    --dataset_name=pascalvoc_2007 \
+    --dataset_name=snacks \
     --dataset_split_name=train \
     --model_name=ssd_300_vgg \
     --checkpoint_path=${CHECKPOINT_PATH} \
