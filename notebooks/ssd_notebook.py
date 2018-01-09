@@ -1,14 +1,17 @@
 # coding: utf-8
+import time
 
 # os imports
 import os
 import math
 import random
 import numpy as np
+
+starttime = time.time()
 import tensorflow as tf
+print ("--- %s seconds ---" % (time.time() - starttime))
 import cv2
 slim = tf.contrib.slim
-
 
 # plot imports
 #get_ipython().magic(u'matplotlib inline')
@@ -21,7 +24,6 @@ import matplotlib.image as mpimg
 import sys
 sys.path.append('../')
 
-
 # SSD imports
 from nets import ssd_vgg_300, ssd_common, np_methods
 from preprocessing import ssd_vgg_preprocessing
@@ -32,7 +34,6 @@ import visualization
 gpu_options = tf.GPUOptions(allow_growth=True)
 config = tf.ConfigProto(log_device_placement=False, gpu_options=gpu_options)
 isess = tf.InteractiveSession(config=config)
-
 
 # ## SSD 300 Model
 # 
@@ -76,12 +77,15 @@ def eval_ssd(dataset_name, image_path=None, ckpt_filename=None):
   reuse = True if 'ssd_net' in locals() else None
   ssd_net = ssd_vgg_300.SSDNet()
   with slim.arg_scope(ssd_net.arg_scope(data_format=data_format)):
-      predictions, localisations, _, _ = ssd_net.net(image_4d, is_training=False, reuse=reuse)
-
+      predictions, localizations, _, _ = ssd_net.net(image_4d, is_training=False, reuse=reuse)
+  
   ## Restore SSD model.
   isess.run(tf.global_variables_initializer())
   saver = tf.train.Saver()
+  
+  starttime = time.time()
   saver.restore(isess, ckpt_filename)
+  print ("--- %s seconds ---" % (time.time() - starttime))
   ssd_anchors = ssd_net.anchors(net_shape)
 
 
@@ -94,11 +98,13 @@ def eval_ssd(dataset_name, image_path=None, ckpt_filename=None):
 
 
   # Run SSD network.
-  rimg, rpredictions, rlocalisations, rbbox_img = isess.run([image_4d, predictions, localisations, bbox_img], 
+  starttime = time.time()
+  rimg, rpredictions, rlocalizations, rbbox_img = isess.run([image_4d, predictions, localizations, bbox_img], 
       feed_dict={img_input: img})
+  print ("--- %s seconds ---" % (time.time() - starttime))
   
   # Get classes and bboxes from the net outputs.
-  rclasses, rscores, rbboxes = np_methods.ssd_bboxes_select(rpredictions, rlocalisations, ssd_anchors,
+  rclasses, rscores, rbboxes = np_methods.ssd_bboxes_select(rpredictions, rlocalizations, ssd_anchors,
       select_threshold=0.5, img_shape=net_shape, num_classes=num_classes, decode=True)
   
   rbboxes = np_methods.bboxes_clip(rbbox_img, rbboxes)
@@ -108,8 +114,8 @@ def eval_ssd(dataset_name, image_path=None, ckpt_filename=None):
   rbboxes = np_methods.bboxes_resize(rbbox_img, rbboxes)
 
   ### visualization.bboxes_draw_on_img(img, rclasses, rscores, rbboxes, visualization.colors_plasma)
-  visualization.plt_bboxes(img, rclasses, rscores, rbboxes)
-  visualization.save_as_JSON(img, rclasses, rscoes, rbboxes)
+  visualization.plt_bboxes(img, rclasses, rscores, rbboxes, dataset_name)
+  visualization.save_as_JSON(img, rclasses, rscores, rbboxes, dataset_name)
 
 
 if __name__ == '__main__':
