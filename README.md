@@ -117,7 +117,7 @@ python eval_ssd_network.py \
     --checkpoint_path=${TRAIN_DIR} \
     --wait_for_checkpoints=True \
     --batch_size=1 \
-    --max_num_batches=500
+    --max_num_batches=500 \
     --num_classes=8
 ```
 
@@ -135,7 +135,6 @@ python train_ssd_network.py \
     --dataset_split_name=train \
     --model_name=ssd_300_vgg \
     --checkpoint_path=${CHECKPOINT_PATH} \
-    --checkpoint_model_scope=vgg_16 \
     --checkpoint_exclude_scopes=ssd_300_vgg/block4_box,ssd_300_vgg/block7_box,ssd_300_vgg/block8_box,ssd_300_vgg/block9_box,ssd_300_vgg/block10_box,ssd_300_vgg/block11_box \
     --trainable_scopes=ssd_300_vgg/block4_box,ssd_300_vgg/block7_box,ssd_300_vgg/block8_box,ssd_300_vgg/block9_box,ssd_300_vgg/block10_box,ssd_300_vgg/block11_box \
     --save_summaries_secs=60 \
@@ -145,7 +144,7 @@ python train_ssd_network.py \
     --learning_rate=0.001 \
     --learning_rate_decay_factor=0.94 \
     --batch_size=32 \
-    --num_classe=8
+    --num_classes=8
 ```
 Hence, in the former command, the training script randomly initializes the weights belonging to the `checkpoint_exclude_scopes` and load from the checkpoint file `vgg_16.ckpt` the remaining part of the network. Note that we also specify with the `trainable_scopes` parameter to first only train the new SSD components and left the rest of VGG network unchanged. Once the network has converged to a good first result (~0.5 mAP for instance), you can fine-tuned the complete network as following:
 ```bash
