@@ -129,7 +129,7 @@ def plt_bboxes(img, classes, scores, bboxes, dataset_name, figsize=(10,10), line
                            '{:s} | {:.3f}'.format(class_name, score),
                            bbox=dict(facecolor=colors[cls_id], alpha=0.5),
                            fontsize=12, color='white')
-        print xmin, xmax, ymin, ymax, class_name
+        print (xmin, xmax, ymin, ymax, class_name)
     
     plt.show(block=True)
     #_ = raw_input("Press [enter] to continue.")
@@ -154,20 +154,18 @@ def save_as_JSON(img, classes, scores, bboxes, dataset_name):
       cls_id = int(classes[i])
       if cls_id > 0:
         # append the values to a list
-        scores_list.append(scores[i])
-        y_min = int(bboxes[i, 0] * height))
-        x_min = int(bboxes[i, 1] * width))
-        y_max = int(bboxes[i, 2] * height))
-        x_max = int(bboxes[i, 3] * width))
+        ymin = int(bboxes[i, 0] * height)
+        xmin = int(bboxes[i, 1] * width)
+        ymax = int(bboxes[i, 2] * height)
+        xmax = int(bboxes[i, 3] * width)
 
         # get the corresponding class name
         for name, (number, type) in LABELS.iteritems():
           if number == cls_id:
             class_name = name
 
-
-        json_list.append([x_min, x_max, y_min, y_max, class_name])
-
+        json_list.append([xmin, xmax, ymin, ymax, class_name])
+        print (xmin, xmax, ymin, ymax, class_name)
         
     with open('prediction.json', 'w') as outfile:
       json.dump(json_list, outfile)
