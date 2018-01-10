@@ -28,6 +28,7 @@ sys.path.append('../')
 from nets import ssd_vgg_300, ssd_common, np_methods
 from preprocessing import ssd_vgg_preprocessing
 import visualization
+from nets import nets_factory
 
 
 ### TensorFlow session: grow memory when needed. TF, DO NOT USE ALL MY GPU MEMORY!!!
@@ -71,11 +72,15 @@ def eval_ssd(dataset_name, image_path=None, ckpt_filename=None):
   path = '../demo/'
   image_names = sorted(os.listdir(path))
   img = mpimg.imread(path + image_names[-5])
+  img = mpimg.imread(path + '/IMG_2634.jpg')
 
 
   ## Define the SSD model.
   reuse = True if 'ssd_net' in locals() else None
-  ssd_net = ssd_vgg_300.SSDNet()
+  ssd_net = nets_factory.get_network('ssd_300_vgg')
+  ssd_params = ssd_net.default_params._replace(num_classes=num_classes, no_annotation_label=num_classes)
+  ssd_net = ssd_net(ssd_params)
+  
   with slim.arg_scope(ssd_net.arg_scope(data_format=data_format)):
       predictions, localizations, _, _ = ssd_net.net(image_4d, is_training=False, reuse=reuse)
   
@@ -105,11 +110,11 @@ def eval_ssd(dataset_name, image_path=None, ckpt_filename=None):
   
   # Get classes and bboxes from the net outputs.
   rclasses, rscores, rbboxes = np_methods.ssd_bboxes_select(rpredictions, rlocalizations, ssd_anchors,
-      select_threshold=0.5, img_shape=net_shape, num_classes=num_classes, decode=True)
+      select_threshold=0.0, img_shape=net_shape, num_classes=num_classes, decode=True)
   
   rbboxes = np_methods.bboxes_clip(rbbox_img, rbboxes)
   rclasses, rscores, rbboxes = np_methods.bboxes_sort(rclasses, rscores, rbboxes, top_k=400)
-  rclasses, rscores, rbboxes = np_methods.bboxes_nms(rclasses, rscores, rbboxes, nms_threshold=0.45)
+  rclasses, rscores, rbboxes = np_methods.bboxes_nms(rclasses, rscores, rbboxes, nms_threshold=0.0)
   # Resize bboxes to original image shape. Note: useless for Resize.WARP!
   rbboxes = np_methods.bboxes_resize(rbbox_img, rbboxes)
 
@@ -121,8 +126,8 @@ def eval_ssd(dataset_name, image_path=None, ckpt_filename=None):
 if __name__ == '__main__':
 
   #ckpt_filename = '../checkpoints/ssd_300_vgg.ckpt'
-  ckpt_filename = '../checkpoints/VGG_VOC0712_SSD_300x300_ft_iter_120000.ckpt'
-  
-  #ckpt_filename = 'snacksssss'
-  eval_ssd(dataset_name='pascalvoc2007', image_path='../demo', ckpt_filename=ckpt_filename)
+  #ckpt_filename = '../checkpoints/VGG_VOC0712_SSD_300x300_ft_iter_120000.ckpt'
+  ckpt_filename = '../logs8/model.ckpt-22272'
+
+  eval_ssd(dataset_name='snacks', image_path='../demo', ckpt_filename=ckpt_filename)
 

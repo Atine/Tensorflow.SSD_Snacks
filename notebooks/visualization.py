@@ -89,8 +89,8 @@ def plt_bboxes(img, classes, scores, bboxes, dataset_name, figsize=(10,10), line
     """Visualize bounding boxes. Largely inspired by SSD-MXNET!
     """
 
-    #print classes.shape
-    #print classes
+    print classes.shape
+    print classes
     
     assert dataset_name in ['pascalvoc2007', 'pascalvoc2012', 'snacks']
     if dataset_name in ['pascalvoc2007', 'pascalvoc2012']:
@@ -136,7 +136,7 @@ def plt_bboxes(img, classes, scores, bboxes, dataset_name, figsize=(10,10), line
                            '{:s} | {:.3f}'.format(class_name, score),
                            bbox=dict(facecolor=colors[cls_id], alpha=0.5),
                            fontsize=12, color='white')
-        print (xmin, xmax, ymin, ymax, class_name)
+        print (xmin, xmax, ymin, ymax, class_name, score)
     
     plt.show(block=True)
     #_ = raw_input("Press [enter] to continue.")
