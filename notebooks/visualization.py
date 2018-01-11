@@ -89,8 +89,8 @@ def plt_bboxes(img, classes, scores, bboxes, dataset_name, figsize=(10,10), line
     """Visualize bounding boxes. Largely inspired by SSD-MXNET!
     """
 
-    print classes.shape
-    print classes
+    print (classes.shape)
+    print (classes)
     
     assert dataset_name in ['pascalvoc2007', 'pascalvoc2012', 'snacks']
     if dataset_name in ['pascalvoc2007', 'pascalvoc2012']:
@@ -136,7 +136,7 @@ def plt_bboxes(img, classes, scores, bboxes, dataset_name, figsize=(10,10), line
                            '{:s} | {:.3f}'.format(class_name, score),
                            bbox=dict(facecolor=colors[cls_id], alpha=0.5),
                            fontsize=12, color='white')
-        print (xmin, xmax, ymin, ymax, class_name, score)
+        print (class_name, xmin, ymin, xmax-xmin, ymax-ymin, score)
     
     plt.show(block=True)
     #_ = raw_input("Press [enter] to continue.")
@@ -144,7 +144,7 @@ def plt_bboxes(img, classes, scores, bboxes, dataset_name, figsize=(10,10), line
 
 
 def save_as_JSON(img, classes, scores, bboxes, dataset_name):
-    import json
+    #import json
   
     assert dataset_name in ['pascalvoc2007', 'pascalvoc2012', 'snacks']
     if dataset_name in ['pascalvoc2007', 'pascalvoc2012']:
@@ -177,11 +177,12 @@ def save_as_JSON(img, classes, scores, bboxes, dataset_name):
               class_name = name
 
 
-        json_list.append([xmin, xmax, ymin, ymax, class_name])
-        print (xmin, xmax, ymin, ymax, class_name)
+        json_list.append([class_name, xmin, ymin, xmax-xmin, ymax-ymin])
+        print (class_name, xmin, ymin, xmax-xmin, ymax-ymin)
         
-    with open('prediction.json', 'w') as outfile:
-      json.dump(json_list, outfile)
+    return json_list
+    #with open('prediction.json', 'w') as outfile:
+    #  json.dump(json_list, outfile)
 
     
 

@@ -22,7 +22,8 @@ import matplotlib.image as mpimg
 
 # path imports
 import sys
-sys.path.append('../')
+#sys.path.append('../')
+sys.path.append('C:/Users/is2017teami/Documents/Tensorflow_SSD_snacks/')
 
 # SSD imports
 from nets import ssd_vgg_300, ssd_common, np_methods
@@ -44,54 +45,52 @@ isess = tf.InteractiveSession(config=config)
 # SSD anchors correspond to the default bounding boxes encoded in the network. The SSD net output provides offset 
 # on the coordinates and dimensions of these anchors.
 
-def eval_ssd(dataset_name, image_path=None, ckpt_filename=None):
+dataset_name = 'snacks'
 
-  assert dataset_name in ['pascalvoc2007', 'pascalvoc2012', 'snacks']
-  if dataset_name in ['pascalvoc2007', 'pascalvoc2012']:
+assert dataset_name in ['pascalvoc2007', 'pascalvoc2012', 'snacks']
+if dataset_name in ['pascalvoc2007', 'pascalvoc2012']:
     num_classes=21
-  if dataset_name == 'snacks':
+if dataset_name == 'snacks':
     num_classes=8
-
-  if ckpt_filename == None:
-    print ("Checkpoint Path not speficied")
-    sys.exit(1)
-  if image_path == None:
-    print ("Image Path not speficied")
-    sys.exit(1)
+	
+ckpt_filename = 'model.ckpt'
+if ckpt_filename == None:
+	print ("Checkpoint Path not speficied")
+	sys.exit(1)
 
 
-  # Input placeholder.
-  net_shape = (300, 300)
-  data_format = 'NHWC'
-  img_input = tf.placeholder(tf.uint8, shape=(None, None, 3))
-  # Evaluation pre-processing: resize to SSD net shape.
-  image_pre, labels_pre, bboxes_pre, bbox_img = ssd_vgg_preprocessing.preprocess_for_eval(
-      img_input, None, None, net_shape, data_format, resize=ssd_vgg_preprocessing.Resize.WARP_RESIZE)
-  image_4d = tf.expand_dims(image_pre, 0)
-  # Test on some demo image and visualize output.
-  path = '../demo/'
-  image_names = sorted(os.listdir(path))
-  img = mpimg.imread(path + image_names[-5])
-  img = mpimg.imread(path + '/IMG_2634.jpg')
+# Input placeholder.
+net_shape = (300, 300)
+data_format = 'NHWC'
+img_input = tf.placeholder(tf.uint8, shape=(None, None, 3))
+# Evaluation pre-processing: resize to SSD net shape.
+image_pre, labels_pre, bboxes_pre, bbox_img = ssd_vgg_preprocessing.preprocess_for_eval(
+  img_input, None, None, net_shape, data_format, resize=ssd_vgg_preprocessing.Resize.WARP_RESIZE)
+image_4d = tf.expand_dims(image_pre, 0)
+# Test on some demo image and visualize output.
+#path = '../demo/'
+#image_names = sorted(os.listdir(path))
+#img = mpimg.imread(path + image_names[-5])
+#img = mpimg.imread(path + '/IMG_2634.jpg')
+#img = mpimg.imread(image_path)
 
+## Define the SSD model.
+reuse = True if 'ssd_net' in locals() else None
+ssd_net = nets_factory.get_network('ssd_300_vgg')
+ssd_params = ssd_net.default_params._replace(num_classes=num_classes, no_annotation_label=num_classes)
+ssd_net = ssd_net(ssd_params)
 
-  ## Define the SSD model.
-  reuse = True if 'ssd_net' in locals() else None
-  ssd_net = nets_factory.get_network('ssd_300_vgg')
-  ssd_params = ssd_net.default_params._replace(num_classes=num_classes, no_annotation_label=num_classes)
-  ssd_net = ssd_net(ssd_params)
-  
-  with slim.arg_scope(ssd_net.arg_scope(data_format=data_format)):
-      predictions, localizations, _, _ = ssd_net.net(image_4d, is_training=False, reuse=reuse)
-  
-  ## Restore SSD model.
-  isess.run(tf.global_variables_initializer())
-  saver = tf.train.Saver()
-  
-  starttime = time.time()
-  saver.restore(isess, ckpt_filename)
-  print ("--- %s seconds ---" % (time.time() - starttime))
-  ssd_anchors = ssd_net.anchors(net_shape)
+with slim.arg_scope(ssd_net.arg_scope(data_format=data_format)):
+  predictions, localizations, _, _ = ssd_net.net(image_4d, is_training=False, reuse=tf.AUTO_REUSE)
+
+## Restore SSD model.
+isess.run(tf.global_variables_initializer())
+saver = tf.train.Saver()
+
+starttime = time.time()
+saver.restore(isess, ckpt_filename)
+print ("--- %s seconds ---" % (time.time() - starttime))
+ssd_anchors = ssd_net.anchors(net_shape)
 
 
   # The SSD outputs need to be post-processed to provide proper detections. Namely, we follow these common steps:
@@ -101,7 +100,15 @@ def eval_ssd(dataset_name, image_path=None, ckpt_filename=None):
   # * Apply the Non-Maximum-Selection algorithm: fuse together boxes whose Jaccard score > threshold;
   # * If necessary, resize bounding boxes to original image shape.
 
-
+#print ("here")
+  
+def eval_ssd(image_path=None):
+  print ('=> Evaluating SSD...')
+  if image_path == None:
+    print ("Image Path not speficied")
+    sys.exit(1)
+	
+  img = mpimg.imread(image_path)
   # Run SSD network.
   starttime = time.time()
   rimg, rpredictions, rlocalizations, rbbox_img = isess.run([image_4d, predictions, localizations, bbox_img], 
@@ -120,9 +127,10 @@ def eval_ssd(dataset_name, image_path=None, ckpt_filename=None):
 
   ### visualization.bboxes_draw_on_img(img, rclasses, rscores, rbboxes, visualization.colors_plasma)
   visualization.plt_bboxes(img, rclasses, rscores, rbboxes, dataset_name)
-  visualization.save_as_JSON(img, rclasses, rscores, rbboxes, dataset_name)
+  pred_list = visualization.save_as_JSON(img, rclasses, rscores, rbboxes, dataset_name)
+  return pred_list
 
-
+  
 if __name__ == '__main__':
 
   #ckpt_filename = '../checkpoints/ssd_300_vgg.ckpt'
